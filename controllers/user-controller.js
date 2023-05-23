@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs')
 const db = require('../models')
-const { localFileHandler } = require('../helpers/file-helpers')
+const { imgurFileHandler } = require('../helpers/file-helpers')
 const { User } = db
 const userController = {
   signUpPage: (req, res) => {
@@ -39,7 +39,7 @@ const userController = {
     res.redirect('/signin')
   },
   getUser: (req, res, next) => {
-    User.findByPk(req.params.id, { raw: true })
+    return User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error('User not found!')
         res.render('users/profile', { user })
@@ -47,10 +47,10 @@ const userController = {
       .catch(err => next(err))
   },
   editUser: (req, res, next) => {
-    User.findByPk(req.params.id, { raw: true })
+    return User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error('User not found!')
-        res.render('users/editProfile', { user })
+        res.render('users/edit', { user })
       })
       .catch(err => next(err))
   },
@@ -60,18 +60,17 @@ const userController = {
     if (!name) throw new Error('Name is required!')
     return Promise.all([ // 非同步處理
       User.findByPk(req.user.id), // 去資料庫查有沒有這個使用者
-      localFileHandler(file) // 把檔案傳到 file-helper 處理
+      imgurFileHandler(file) // 把檔案傳到 file-helper 處理
     ])
       .then(([user, filePath]) => { // 以上兩樣事都做完以後
         if (!user) throw new Error("User didn't exist!")
-        if (user.id !== Number(req.params.id)) throw new Error('Edit self profile only!')
         return user.update({ // 修改這筆資料
           name,
           image: filePath || user.image // 如果 filePath 是 Truthy (使用者有上傳新照片) 就用 filePath，是 Falsy (使用者沒有上傳新照片) 就沿用原本資料庫內的值
         })
       })
       .then(() => {
-        req.flash('success_messages', 'profile is successfully to update')
+        req.flash('success_messages', '使用者資料編輯成功')
         res.redirect(`/users/${req.user.id}`)
       })
       .catch(err => next(err))
