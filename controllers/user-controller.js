@@ -42,7 +42,7 @@ const userController = {
     User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error('User not found!')
-        res.render('user/userProfile', { user })
+        res.render('users/profile', { user })
       })
       .catch(err => next(err))
   },
@@ -50,7 +50,7 @@ const userController = {
     User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error('User not found!')
-        res.render('user/editProfile', { user })
+        res.render('users/editProfile', { user })
       })
       .catch(err => next(err))
   },
