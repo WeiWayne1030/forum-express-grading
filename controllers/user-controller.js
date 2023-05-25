@@ -52,7 +52,12 @@ const userController = {
     ])
       .then(([user, comments]) => {
         if (!user) throw new Error('User not found!')
-        res.render('users/profile', { user, comments })
+        if (user.id === req.user.id) {
+          res.render('users/profile', { user, comments })
+        } else {
+          req.flash('error_messages', 'Do not have authentication to view other user page!')
+          res.redirect(`/users/${req.user.id}`)
+        }
       })
       .catch(err => next(err))
   },
